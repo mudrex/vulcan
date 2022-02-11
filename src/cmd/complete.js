@@ -74,9 +74,15 @@ exports.handler = async (argv) => {
 
 	// Modify Listener if green target group exists
 	if (argv.isLoadBalancerPresent) {
+		logger.info(
+			`Preparing to modify live listener rule ${argv.liveListenerRuleArn} to point to target group ${argv.greenTargetGroupArn}.`
+		)
 		const modifiedListener = await aws.modifyListenerRule(
 			argv.liveListenerRuleArn,
 			argv.greenTargetGroupArn
+		)
+		logger.info(
+			`Live listener rule ${argv.liveListenerRuleArn} successfully modified.`
 		)
 		logger.debug(
 			`Modified Listener Rule: - \n ${JSON.stringify(
@@ -88,22 +94,28 @@ exports.handler = async (argv) => {
 	}
 
 	// Update primary Task set of service to green task set
+	logger.info(
+		`Updating primary task set to green task set ${argv.greenTaskSetArn}.`
+	)
 	const updatedTaskSet = await aws.updateServicePrimaryTaskSet(
 		argv.serviceName,
 		argv.clusterName,
 		argv.greenTaskSetArn
 	)
+	logger.info('Primary Task Set successfully updated.')
 	logger.debug(
 		`Updated Task Set: - \n ${JSON.stringify(updatedTaskSet, null, 2)}`
 	)
 
 	// Delete blue task set if it exists
 	if (!vulcan.isStringNull(argv.blueTaskSetArn)) {
+		logger.info(`Deleting Blue Task Set ${argv.blueTaskSetArn}.`)
 		const deletedTaskSet = await aws.deleteTaskSet(
 			argv.serviceName,
 			argv.clusterName,
 			argv.blueTaskSetArn
 		)
+		logger.info(`Blue Task Set ${argv.blueTaskSetArn} successfully deleted.`)
 		logger.debug(
 			`Deleted Task Set: - \n ${JSON.stringify(deletedTaskSet, null, 2)}`
 		)

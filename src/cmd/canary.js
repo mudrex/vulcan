@@ -61,5 +61,6 @@ exports.handler = async (argv) => {
 		argv.greenTargetGroupArn,
 		argv.percent
 	)
+	logger.info(`${argv.percent}% of traffic shift successfully completed.`)
 	logger.debug(`Listener Rule: - \n ${JSON.stringify(shift, null, 2)}`)
 }
