@@ -68,7 +68,7 @@ exports.builder = {
  *
  * Deletes all green deployment resources and modifies load balancer to point to blue deployment if applicable.
  *
- * @param {Object} argv - The parameters mentioned in {@link module:wait.builder}
+ * @param {Object} argv - The parameters mentioned in {@link module:rollback.builder}
  *
  */
 exports.handler = async (argv) => {
