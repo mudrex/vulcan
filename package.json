@@ -1,5 +1,5 @@
 {
-	"name": "vulcan",
+	"name": "vulcan-ecs-deployer",
 	"version": "0.0.1",
 	"description": "A command line utility for blue-green deployments on AWS Elastic Container Service.",
 	"main": "bin/index.js",
@@ -11,8 +11,12 @@
 	"bin": {
 		"vulcan": "bin/index.js"
 	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/mudrex/vulcan.git"
+	},
 	"author": "grandwizard",
-	"license": "ISC",
+	"license": "MIT",
 	"dependencies": {
 		"aws-sdk": "^2.1062.0",
 		"chalk": "^4.1.2",
