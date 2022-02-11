@@ -105,7 +105,8 @@ exports.builder = {
  * If blue green is not enabled, the live listener rule is modified to serve 100% traffic from green.
  * If blue green is enabled, the test listener rule is modified to serve 100% traffic from green.
  *
- * @param {*} argv
+ * @param {*} argv - The parameters mentioned in {@link module:deploy.builder}
+ *
  */
 exports.handler = async (argv) => {
 	logger.debug(`Input: -\n ${JSON.stringify(argv, null, 2)}`)

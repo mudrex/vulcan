@@ -39,7 +39,7 @@ exports.builder = {
  *
  * Deletes all ACTIVE deployments.
  *
- * @param {Object} argv - The parameters mentioned in {@link module:wait.builder}
+ * @param {Object} argv - The parameters mentioned in {@link module:clean.builder}
  *
  */
 exports.handler = async (argv) => {
