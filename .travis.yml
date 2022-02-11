@@ -1,0 +1,22 @@
+os: linux
+dist: xenial
+
+language: node.js
+php:
+ - 17.3.0
+
+services:
+  - docker
+
+jobs:
+  include:
+    - stage: "Lint"
+      before_script:
+        - npm install
+
+      script:
+        - npm run prettier
+				- npm run eslint
+
+      after_script:
+        - echo "Lint stage successful."

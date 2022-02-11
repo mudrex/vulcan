@@ -1,6 +1,6 @@
 {
 	"name": "vulcan",
-	"version": "1.0.0",
+	"version": "0.0.1",
 	"description": "A command line utility for blue-green deployments on AWS Elastic Container Service.",
 	"main": "bin/index.js",
 	"scripts": {
