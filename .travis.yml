@@ -16,7 +16,7 @@ jobs:
 
       script:
         - npm run prettier
-				- npm run eslint
+        - npm run eslint
 
       after_script:
         - echo "Lint stage successful."
