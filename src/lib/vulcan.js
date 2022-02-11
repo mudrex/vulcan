@@ -148,6 +148,7 @@ const getTaskDefinition = async (
 		'compatibilities',
 		'registeredAt',
 		'registeredBy',
+		'requiresAttributes',
 	]
 	removeKeys.forEach((item) => {
 		delete oldTaskDefinition.taskDefinition[`${item}`]
@@ -288,7 +289,7 @@ const createTaskSet = async (
 	)
 
 	const createdTaskSet = await aws.createTaskSet(taskSet)
-	logger.info(
+	logger.debug(
 		`Created Task Set: - \n ${JSON.stringify(createdTaskSet, null, 2)}`
 	)
 	return createdTaskSet
@@ -431,10 +432,10 @@ const getTargetGroupARN = async (targetGroupName) => {
  * Returns whether a string is null or not.
  *
  * @param {String} str - String to perform null check on
- * @returns {Boolean}
+ * @return {Boolean}
  */
 const isStringNull = (str) => {
-	if(str && str != 'null'){
+	if (str && str != 'null') {
 		return false
 	}
 
@@ -451,5 +452,5 @@ module.exports = {
 	isLoadBalancerPresent: isLoadBalancerPresent,
 	getTargetGroupsWithBlueGreenEnabled: getTargetGroupsWithBlueGreenEnabled,
 	getTargetGroupWithBlueGreenDisabled: getTargetGroupWithBlueGreenDisabled,
-	isStringNull: isStringNull
+	isStringNull: isStringNull,
 }
