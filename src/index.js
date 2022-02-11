@@ -43,7 +43,7 @@ const setEnv = () => {
  */
 const fail = (msg, err, yargs) => {
 	if (err) {
-		process.exit(1)
+		throw err
 	}
 	logger.error(msg)
 	yargs.showHelp()
