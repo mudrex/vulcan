@@ -1,0 +1,18 @@
+env:
+  node: true
+  commonjs: true
+  es2021: true
+extends:
+  - google
+  - eslint:recommended
+  - prettier
+parserOptions:
+  ecmaVersion: latest
+ignorePatterns:
+  - '**/jsdocs/'
+rules:
+  {
+    semi: ['error', 'never'],
+    quotes: ['error', 'single'],
+    quote-props: ['error', 'consistent'],
+  }
