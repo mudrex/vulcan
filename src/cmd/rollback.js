@@ -94,7 +94,9 @@ exports.handler = async (argv) => {
 
 	// Deregister task defintion
 	if (!vulcan.isStringNull(argv.greenTaskDefinitionArn)) {
-		logger.info(`Deregistering Green Task Definition ${argv.greenTaskDefinitionArn}`)
+		logger.info(
+			`Deregistering Green Task Definition ${argv.greenTaskDefinitionArn}`
+		)
 		const deregisteredTaskDefinition = await aws.deregisterTaskDefinition(
 			argv.greenTaskDefinitionArn
 		)
@@ -105,21 +107,27 @@ exports.handler = async (argv) => {
 				2
 			)}`
 		)
-		logger.info(`Green Task Definition ${argv.greenTaskDefinitionArn} successfully deregistered.`)
+		logger.info(
+			`Green Task Definition ${argv.greenTaskDefinitionArn} successfully deregistered.`
+		)
 	}
 
 	// Correct Load Balancer Rules
 	// Dont rely on blueTargetGroupArn presence. There might be a load balancer and blue target group Arn was missed out.
 	if (argv.isLoadBalancerPresent && !argv.isInitialDeployment) {
-		//Perform null check
-		const isBlueTargetGroupArnNull = vulcan.isStringNull(argv.blueTargetGroupArn)
-		if(isBlueTargetGroupArnNull){
+		// Perform null check
+		const isBlueTargetGroupArnNull = vulcan.isStringNull(
+			argv.blueTargetGroupArn
+		)
+		if (isBlueTargetGroupArnNull) {
 			const errorMessage = `Load Balancer Listener Rule could not be changed as no blue-target-group-arn was specified. Please correct the rules manually on Listener Rule ${argv.liveListenerRuleArn}`
 			logger.error(`${errorMessage}`)
 			throw Error(`${errorMessage}`)
 		}
 
-		logger.info(`Modifying Load Balancer Listener Rule ${argv.liveListenerRuleArn}.`)
+		logger.info(
+			`Modifying Load Balancer Listener Rule ${argv.liveListenerRuleArn}.`
+		)
 		const modifiedListener = await aws.modifyListenerRule(
 			argv.liveListenerRuleArn,
 			argv.blueTargetGroupArn
@@ -131,6 +139,8 @@ exports.handler = async (argv) => {
 				2
 			)}`
 		)
-		logger.info(`Load Balancer Listener Rule ${argv.liveListenerRuleArn} successfully modified.`)
+		logger.info(
+			`Load Balancer Listener Rule ${argv.liveListenerRuleArn} successfully modified.`
+		)
 	}
 }
