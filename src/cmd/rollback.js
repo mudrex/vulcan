@@ -1,4 +1,5 @@
 const logger = require('../config/logger')('rollback', process.env['LOG_LEVEL'])
+const vulcan = require('../lib/vulcan')
 const aws = require('../utils/aws')
 
 /**
@@ -65,15 +66,17 @@ exports.builder = {
 /**
  * Handler which executes on this command.
  *
- * Deletes all green deployment resources and modifies load balancer to point to blue deployment.
+ * Deletes all green deployment resources and modifies load balancer to point to blue deployment if applicable.
  *
  * @param {Object} argv - The parameters mentioned in {@link module:wait.builder}
  *
  */
 exports.handler = async (argv) => {
 	logger.debug(`Input: -\n ${JSON.stringify(argv, null, 2)}`)
+
 	// Delete Task Set
-	if (argv.greenTaskSetArn && argv.greenTaskSetArn != 'null') {
+	if (!vulcan.isStringNull(argv.greenTaskSetArn)) {
+		logger.info(`Deleting Green Task Set ${argv.greenTaskSetArn}`)
 		const deletedGreenTaskSet = await aws.deleteTaskSet(
 			argv.serviceName,
 			argv.clusterName,
@@ -86,10 +89,12 @@ exports.handler = async (argv) => {
 				2
 			)}`
 		)
+		logger.info(`Green Task Set ${argv.greenTaskSetArn} successfully deleted.`)
 	}
 
 	// Deregister task defintion
-	if (argv.greenTaskDefinitionArn && argv.greenTaskDefinitionArn != 'null') {
+	if (!vulcan.isStringNull(argv.greenTaskDefinitionArn)) {
+		logger.info(`Deregistering Green Task Definition ${argv.greenTaskDefinitionArn}`)
 		const deregisteredTaskDefinition = await aws.deregisterTaskDefinition(
 			argv.greenTaskDefinitionArn
 		)
@@ -100,11 +105,21 @@ exports.handler = async (argv) => {
 				2
 			)}`
 		)
+		logger.info(`Green Task Definition ${argv.greenTaskDefinitionArn} successfully deregistered.`)
 	}
 
 	// Correct Load Balancer Rules
+	// Dont rely on blueTargetGroupArn presence. There might be a load balancer and blue target group Arn was missed out.
 	if (argv.isLoadBalancerPresent && !argv.isInitialDeployment) {
-		logger.info('Load balancer rules have to be corrected as well.')
+		//Perform null check
+		const isBlueTargetGroupArnNull = vulcan.isStringNull(argv.blueTargetGroupArn)
+		if(isBlueTargetGroupArnNull){
+			const errorMessage = `Load Balancer Listener Rule could not be changed as no blue-target-group-arn was specified. Please correct the rules manually on Listener Rule ${argv.liveListenerRuleArn}`
+			logger.error(`${errorMessage}`)
+			throw Error(`${errorMessage}`)
+		}
+
+		logger.info(`Modifying Load Balancer Listener Rule ${argv.liveListenerRuleArn}.`)
 		const modifiedListener = await aws.modifyListenerRule(
 			argv.liveListenerRuleArn,
 			argv.blueTargetGroupArn
@@ -116,5 +131,6 @@ exports.handler = async (argv) => {
 				2
 			)}`
 		)
+		logger.info(`Load Balancer Listener Rule ${argv.liveListenerRuleArn} successfully modified.`)
 	}
 }
