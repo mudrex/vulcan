@@ -8,6 +8,39 @@ const file = require('../utils/file')
  */
 
 /**
+ * Returns a list of active task set Arns.
+ *
+ * @param {Object} serviceDescription - Details of the service obtained from the ecs describe-service command
+ * @return {Object} List of active task set Arns
+ */
+const getActiveTaskSetArns = (serviceDescription) => {
+	logger.debug('Starting execution of getActiveTaskSetArns()')
+	// Check if service exists or not
+	if (serviceDescription.services.length == 0) {
+		const errorMessage = `Error occurred while describing service with Arn ${serviceDescription.failures[0].arn}, reason is ${serviceDescription.failures[0].reason}`
+		logger.error(`${errorMessage}`)
+		throw Error(`${errorMessage}`)
+	}
+
+	const serviceDetails = serviceDescription.services[0]
+	if (serviceDetails.taskSets.length == 0) {
+		logger.info('No Task Sets found for service. There is nothing to clean.')
+		return null
+	}
+
+	const activeTaskSetArns = []
+	for (const taskSet of serviceDetails.taskSets) {
+		logger.debug(`Checking taskSet: - \n ${JSON.stringify(taskSet, null, 2)}`)
+		if (taskSet.status == 'ACTIVE') {
+			logger.info(`Found Active Task Set ${taskSet.taskSetArn}`)
+			activeTaskSetArns.push(taskSet.taskSetArn)
+		}
+	}
+
+	return activeTaskSetArns
+}
+
+/**
  * Returns the ARN of the blue task set.
  *
  * Before returning the blue task set Arn, it runs a series of basic sanity checks on the output of ecs describe-service command.
@@ -26,7 +59,7 @@ const getBlueTaskSetArn = async (serviceDescription) => {
 
 	const serviceDetails = serviceDescription.services[0]
 	logger.info(
-		`Found service with name ${serviceDetails.serviceName} and Arn ${serviceDetails.serviceArn} in Cluster ${serviceDetails.clusterArn}`
+		`Found service with name ${serviceDetails.serviceName} and Arn ${serviceDetails.serviceArn} in cluster ${serviceDetails.clusterArn}`
 	)
 	logger.debug(`serviceDetails: ${JSON.stringify(serviceDetails, null, 2)}`)
 	// Check if deploymentController is EXTERNAL
@@ -443,6 +476,7 @@ const isStringNull = (str) => {
 }
 
 module.exports = {
+	getActiveTaskSetArns: getActiveTaskSetArns,
 	getBlueTaskSetArn: getBlueTaskSetArn,
 	createTaskDefinition: createTaskDefinition,
 	createTaskSet: createTaskSet,
