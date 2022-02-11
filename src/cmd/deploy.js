@@ -125,15 +125,17 @@ exports.handler = async (argv) => {
 	try {
 		let blueTaskSet = null
 		// Perform null check on blueTaskSetArn
-		if (argv.blueTaskSetArn && argv.blueTaskSetArn != 'null') {
+		if (!vulcan.isStringNull(argv.blueTaskSetArn)) {
 			const blueTaskSetDescription = await aws.describeTaskSet(
 				argv.serviceName,
 				argv.clusterName,
 				argv.blueTaskSetArn
 			)
 			blueTaskSet = blueTaskSetDescription.taskSets[0]
-			logger.info(`Blue TaskSet is ${blueTaskSet.taskSetArn}`)
-			logger.debug(`Blue TaskSet: -\n ${JSON.stringify(blueTaskSet, null, 2)}`)
+			logger.info(`Blue Task Set is ${blueTaskSet.taskSetArn}`)
+			logger.debug(`Blue Task Set: -\n ${JSON.stringify(blueTaskSet, null, 2)}`)
+		} else {
+			logger.info('Blue Task Set not found. This is the first deployment.')
 		}
 
 		const isBluePresent = blueTaskSet == null ? false : true
@@ -146,7 +148,11 @@ exports.handler = async (argv) => {
 			argv.taskDefinitionFile
 		)
 		logger.debug(
-			`Template Task Definition: -\n${JSON.stringify(taskDefinition, null, 2)}`
+			`Input Green Task Definition -\n${JSON.stringify(
+				taskDefinition,
+				null,
+				2
+			)}`
 		)
 
 		const greenTaskDefinition = vulcan.createTaskDefinition(
@@ -157,7 +163,7 @@ exports.handler = async (argv) => {
 			argv.taskRoleArn
 		)
 		logger.debug(
-			`New Task Definition to Register: - \n ${JSON.stringify(
+			`Green Task Definition to Register -\n ${JSON.stringify(
 				greenTaskDefinition,
 				null,
 				2
@@ -168,7 +174,10 @@ exports.handler = async (argv) => {
 			greenTaskDefinition
 		)
 		logger.info(
-			`Registered Task Definiton: - \n ${JSON.stringify(
+			`Green Task Definition ${registeredTaskDefinition.taskDefinition.taskDefinitionArn} successfully registered.`
+		)
+		logger.debug(
+			`Green Task Definition - \n ${JSON.stringify(
 				registeredTaskDefinition,
 				null,
 				2
@@ -185,7 +194,7 @@ exports.handler = async (argv) => {
 			argv.taskSetFile
 		)
 		logger.debug(
-			`Template Task Set: -\n${JSON.stringify(greenTaskSet, null, 2)}`
+			`Input Green Task Set - \n ${JSON.stringify(greenTaskSet, null, 2)}`
 		)
 
 		const flags = {
@@ -200,12 +209,18 @@ exports.handler = async (argv) => {
 		switch (flags.isLoadBalancer) {
 			case false: {
 				// Only create Task Set
+				logger.info(
+					'Conditions match for a rolling deployment with no load balancers.'
+				)
 				const createdTaskSet = await vulcan.createTaskSet(
 					greenTaskSet,
 					registeredTaskDefinition,
 					null,
 					argv.serviceName,
 					argv.clusterName
+				)
+				logger.info(
+					`Green Task Set ${createdTaskSet.taskSet.taskSetArn} successfully created.`
 				)
 				// Update state
 				state.isCanaryEligible = false
@@ -216,7 +231,7 @@ exports.handler = async (argv) => {
 			case true:
 				if (flags.isBlueGreen && flags.isBluePresent) {
 					// Case for blue green deployment
-					logger.info('Conditions match for a blue green deployment')
+					logger.info('Conditions match for a blue green deployment.')
 
 					const targetGroups = vulcan.getTargetGroupsWithBlueGreenEnabled(
 						argv.targetGroups,
@@ -237,11 +252,18 @@ exports.handler = async (argv) => {
 						argv.serviceName,
 						argv.clusterName
 					)
+					logger.info(
+						`Green Task Set ${createdTaskSet.taskSet.taskSetArn} successfully created.`
+					)
 
+					logger.info(
+						`Preparing to modify test listener rule ${argv.testListenerRuleArn} to point to target group ${greenTargetGroupArn}.`
+					)
 					const modifiedListener = await aws.modifyListenerRule(
 						argv.testListenerRuleArn,
 						greenTargetGroupArn
 					)
+					logger.info('Test Listener Rule successfully modified.')
 					logger.debug(`Modified Listener: - \n ${modifiedListener}`)
 
 					// Update State
@@ -252,7 +274,9 @@ exports.handler = async (argv) => {
 					state.blueTargetGroupArn = blueTargetGroupArn
 				} else {
 					// Just modify green directly and do a rolling deploy.
-					logger.info('OKAY: Conditions match for a rolling deployment')
+					logger.info(
+						'Conditions match for a rolling deployment with load balancer.'
+					)
 					const greenTargetGroup = vulcan.getTargetGroupWithBlueGreenDisabled(
 						argv.targetGroups
 					)
@@ -267,10 +291,16 @@ exports.handler = async (argv) => {
 						argv.serviceName,
 						argv.clusterName
 					)
+					logger.info(
+						`Green Task Set ${createdTaskSet.taskSet.taskSetArn} successfully created.`
+					)
+
+					logger.info('Preparing to shift 100% of traffic to green deployment.')
 					const modifiedListener = await aws.modifyListenerRule(
 						argv.liveListenerRuleArn,
 						greenTargetGroupArn
 					)
+					logger.info('Traffic shift successfully completed.')
 					logger.debug(`Modified Listener: - \n ${modifiedListener}`)
 					// Update State
 					state.isCanaryEligible = false
@@ -280,7 +310,7 @@ exports.handler = async (argv) => {
 				}
 		}
 
-		logger.info(`State: - \n ${JSON.stringify(state, null, 2)}`)
+		logger.debug(`Vulcan State: - \n ${JSON.stringify(state, null, 2)}`)
 		file.writeJSON(argv.outputFile, state)
 	} catch (error) {
 		logger.info(
