@@ -78,11 +78,11 @@ exports.handler = async (argv) => {
 		logger.debug(`Green Task Set: ${JSON.stringify(taskSet, null, 2)}`)
 		const taskSetStabilityStatus = taskSet.stabilityStatus
 		logger.info(
-			`Task Set : ${argv.greenTaskSetArn} has stabilityStatus: ${taskSetStabilityStatus}`
+			`Task Set ${argv.greenTaskSetArn} has stabilityStatus ${taskSetStabilityStatus}`
 		)
 		if (argv.check == false && taskSetStabilityStatus == 'STEADY_STATE') {
 			logger.debug('Clearing ecsTaskStatusId')
-			logger.info(`Deployment has reached status : ${taskSetStabilityStatus}`)
+			logger.info(`Deployment has reached status ${taskSetStabilityStatus}`)
 			clearInterval(ecsTaskStatusId)
 			clearTimeout(globalTimeoutId)
 		}
@@ -91,7 +91,7 @@ exports.handler = async (argv) => {
 			logger.debug('Clearing ecsTaskStatusId')
 			clearInterval(ecsTaskStatusId)
 			clearTimeout(globalTimeoutId)
-			const errorMessage = `Deployment has become unhealthy with status : ${taskSetStabilityStatus}.`
+			const errorMessage = `Deployment has become unhealthy with status ${taskSetStabilityStatus}.`
 			logger.error(`${errorMessage}`)
 			throw new Error(`${errorMessage}`)
 		}
