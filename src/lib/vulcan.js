@@ -427,6 +427,20 @@ const getTargetGroupARN = async (targetGroupName) => {
 	return targetGroup.TargetGroups[0].TargetGroupArn
 }
 
+/**
+ * Returns whether a string is null or not.
+ *
+ * @param {String} str - String to perform null check on
+ * @returns {Boolean}
+ */
+const isStringNull = (str) => {
+	if(str && str != 'null'){
+		return false
+	}
+
+	return true
+}
+
 module.exports = {
 	getBlueTaskSetArn: getBlueTaskSetArn,
 	createTaskDefinition: createTaskDefinition,
@@ -437,4 +451,5 @@ module.exports = {
 	isLoadBalancerPresent: isLoadBalancerPresent,
 	getTargetGroupsWithBlueGreenEnabled: getTargetGroupsWithBlueGreenEnabled,
 	getTargetGroupWithBlueGreenDisabled: getTargetGroupWithBlueGreenDisabled,
+	isStringNull: isStringNull
 }
