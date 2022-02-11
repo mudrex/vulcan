@@ -105,3 +105,6 @@ dist
 
 # JSDocs
 jsdocs/
+
+# .vscode
+.vscode/
