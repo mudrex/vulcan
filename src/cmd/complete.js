@@ -1,5 +1,6 @@
 const logger = require('../config/logger')('complete', process.env['LOG_LEVEL'])
 const aws = require('../utils/aws')
+const vulcan = require('../lib/vulcan')
 
 /**
  * Module responsible for doing completing a deployment.
@@ -97,7 +98,7 @@ exports.handler = async (argv) => {
 	)
 
 	// Delete blue task set if it exists
-	if (argv.blueTaskSetArn && argv.blueTaskSetArn != 'null') {
+	if (!vulcan.isStringNull(argv.blueTaskSetArn)) {
 		const deletedTaskSet = await aws.deleteTaskSet(
 			argv.serviceName,
 			argv.clusterName,
