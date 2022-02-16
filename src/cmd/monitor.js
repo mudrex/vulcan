@@ -39,7 +39,7 @@ exports.builder = {
 		default: 'task.json',
 		demandOption: true,
 	},
-	timeout: {
+	'timeout': {
 		describe:
 			'The total time (in seconds) to monitor the deployment. The command will fail if the deployment becomes unhealthy within this time period.',
 		type: 'number',
