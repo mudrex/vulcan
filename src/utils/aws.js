@@ -1,4 +1,4 @@
-const logger = require('../config/logger')('aws', process.env['LOG_LEVEL'])
+const logger = require('../config/logger')('aws')
 const aws = require('aws-sdk')
 
 /**

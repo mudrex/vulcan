@@ -1,10 +1,10 @@
-const logger = require('../config/logger')('file', process.env['LOG_LEVEL'])
+const logger = require('../config/logger')('file')
 const fs = require('fs')
 const path = require('path')
 
 /**
  * Module containing functions for interacting with the file system.
- * @module aws
+ * @module file
  */
 
 /**
