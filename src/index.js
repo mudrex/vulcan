@@ -1,5 +1,5 @@
 const yargs = require('yargs')
-const logger = require('./config/logger')('init', 'info')
+const logger = require('./config/logger')('init')
 const dotenv = require('dotenv')
 
 /**
@@ -19,6 +19,7 @@ const init = () => {
 		.demandCommand()
 		.version()
 		.help()
+		.wrap(yargs.terminalWidth())
 		.fail(fail).argv
 }
 
