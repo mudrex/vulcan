@@ -115,7 +115,7 @@ exports.handler = async (argv) => {
 		// Step 2 - Assemble Green Task Set
 		//
 		logger.info('Trying to assemble green task set')
-		const assembledGreenTaskSet = vulcan.assembleGreenTaskSet(
+		const assembledGreenTaskSet = vulcan.assembleTaskSet(
 			argv.serviceName,
 			argv.clusterName,
 			registeredGreenTaskDefinitionArn,
@@ -142,7 +142,7 @@ exports.handler = async (argv) => {
 			createdTaskSet.taskSet
 		)
 		if (isLoadBalancerPresent) {
-			if (obj.isStringNull(argv.listenerRuleArn)) {
+			if (obj.isStringNull(argv.greenListenerRuleArn)) {
 				const errorMessage =
 					'The deployment contains a load balancer, please specify a listener rule arn'
 				logger.error(`${errorMessage}`)
@@ -151,10 +151,10 @@ exports.handler = async (argv) => {
 			const greenTargetGroupArn =
 				createdTaskSet.taskSet.loadBalancers[0].targetGroupArn
 			logger.info(
-				`Preparing to modify listener rule ${argv.listenerRuleArn} to point to target group ${greenTargetGroupArn}.`
+				`Preparing to modify listener rule ${argv.greenListenerRuleArn} to point to target group ${greenTargetGroupArn}.`
 			)
 			const modifiedListener = await aws.modifyListenerRule(
-				argv.listenerRuleArn,
+				argv.greenListenerRuleArn,
 				greenTargetGroupArn
 			)
 			logger.debug(`Modified Listener: - \n ${modifiedListener}`)

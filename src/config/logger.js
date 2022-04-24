@@ -16,7 +16,7 @@ module.exports = (moduleName, logLevel) => {
 	const format = winston.format.printf(
 		({ level, message, label, timestamp }) => {
 			const levelUpper = level.toUpperCase()
-			return `[${timestamp}] (${label}) ${levelUpper} : ${message}`
+			return `[${timestamp}] [${levelUpper}] ${message}`
 		}
 	)
 	const logger = winston.createLogger({

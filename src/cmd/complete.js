@@ -1,6 +1,7 @@
 const logger = require('../config/logger')('complete', process.env['LOG_LEVEL'])
 const aws = require('../utils/aws')
 const vulcan = require('../lib/vulcan')
+const obj = require('../utils/obj')
 
 /**
  * Module responsible for doing completing a deployment.
@@ -32,12 +33,6 @@ exports.builder = {
 		type: 'string',
 		demandOption: true,
 	},
-	'blue-task-set-arn': {
-		describe:
-			'ARN of the blue task set of ECS cluster in the specified AWS region.',
-		type: 'string',
-		demandOption: false,
-	},
 	'green-task-set-arn': {
 		describe:
 			'ARN of the blue task set of ECS cluster in the specified AWS region.',
@@ -53,7 +48,7 @@ exports.builder = {
 		describe:
 			'ARN of the blue task set of ECS cluster in the specified AWS region.',
 		type: 'string',
-		demandOption: true,
+		demandOption: false,
 	},
 	'live-listener-rule-arn': {
 		describe: 'ARN of live listener rule.',
@@ -71,6 +66,14 @@ exports.builder = {
  */
 exports.handler = async (argv) => {
 	logger.debug(`Input: -\n ${JSON.stringify(argv, null, 2)}`)
+
+	const awsDescribeService = await aws.describeService(
+		argv.serviceName,
+		argv.clusterName
+	)
+	const service = vulcan.getService(awsDescribeService)
+	logger.info(`Trying to find blue task set for service ${argv.serviceName}`)
+	const blueTaskSet = vulcan.findBlueTaskSet(service.taskSets)
 
 	// Modify Listener if green target group exists
 	if (argv.isLoadBalancerPresent) {
@@ -108,14 +111,14 @@ exports.handler = async (argv) => {
 	)
 
 	// Delete blue task set if it exists
-	if (!vulcan.isStringNull(argv.blueTaskSetArn)) {
-		logger.info(`Deleting Blue Task Set ${argv.blueTaskSetArn}.`)
+	if (!obj.isStringNull(blueTaskSet)) {
+		logger.info(`Deleting Blue Task Set ${blueTaskSet.taskSetArn}.`)
 		const deletedTaskSet = await aws.deleteTaskSet(
 			argv.serviceName,
 			argv.clusterName,
-			argv.blueTaskSetArn
+			blueTaskSet.taskSetArn
 		)
-		logger.info(`Blue Task Set ${argv.blueTaskSetArn} successfully deleted.`)
+		logger.info(`Blue Task Set ${blueTaskSet.taskSetArn} successfully deleted.`)
 		logger.debug(
 			`Deleted Task Set: - \n ${JSON.stringify(deletedTaskSet, null, 2)}`
 		)

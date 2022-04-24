@@ -19,7 +19,7 @@ const init = () => {
 		.demandCommand()
 		.version()
 		.help()
-		.wrap(yargs.terminalWidth())
+		.wrap(0.5 * yargs.terminalWidth())
 		.fail(fail).argv
 }
 
